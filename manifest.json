@@ -1,0 +1,15 @@
+{
+  "name": "北海道迷路ゲーム",
+  "short_name": "迷路ゲーム",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#222222",
+  "theme_color": "#222222",
+  "icons": [
+    {
+      "src": "https://i.imgur.com/Q6opy9g.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
