@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>北海道・曲線迷路デモ</title>
+    <style>
+        body { text-align: center; background: #333; color: white; font-family: sans-serif; }
+        #mazeCanvas { background: white; cursor: crosshair; touch-action: none; border: 5px solid #fff; }
+        #msg { margin-top: 10px; font-size: 20px; }
+    </style>
+</head>
+<body>
+    <h2>ペンでなぞってゴールを目指せ！</h2>
+    <canvas id="mazeCanvas"></canvas>
+    <div id="msg">スタート地点にペンを置いてなぞってください</div>
+
+<script>
+const canvas = document.getElementById("mazeCanvas");
+const ctx = canvas.getContext("2d");
+const msg = document.getElementById("msg");
+const img = new Image();
+img.src = 'hokkaido.png';
+
+let isDragging = false;
+let startTime = null;
+
+img.onload = () => {
+    // 画像サイズに合わせてキャンバスを設定
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+};
+
+// 衝突判定：その座標の色が黒（壁）ならtrueを返す
+function isWall(x, y) {
+    const pixel = ctx.getImageData(x, y, 1, 1).data;
+    // 黒に近い色(0,0,0)なら壁とみなす（閾値128）
+    return (pixel[0] < 128); 
+}
+
+canvas.addEventListener("pointermove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (isDragging) {
+        if (isWall(x, y)) {
+            msg.textContent = "壁に触れました！やり直しです...";
+            isDragging = false;
+        } else {
+            // 現在地を描画（軌跡）
+            ctx.fillStyle = "blue";
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // ゴール判定（右下の特定座標をゴールと仮定）
+            if (x > canvas.width - 50 && y > canvas.height - 50) {
+                const time = ((Date.now() - startTime) / 1000).toFixed(2);
+                msg.textContent = `🎉 ゴール！ 旅の記録: ${time}秒`;
+                isDragging = false;
+            }
+        }
+    }
+});
+
+canvas.addEventListener("pointerdown", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // スタート地点（左上付近）から開始
+    if (!isWall(x, y)) {
+        isDragging = true;
+        startTime = Date.now();
+        msg.textContent = "なぞり中...";
+    }
+});
+
+canvas.addEventListener("pointerup", () => { isDragging = false; });
+</script>
+</body>
+</html>
