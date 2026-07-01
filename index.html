@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スマホ迷路ゲーム</title>
+    <style>
+        body { 
+            text-align: center; background: #222; color: white; 
+            font-family: sans-serif; touch-action: none; margin: 0; padding: 20px; 
+        }
+        canvas { 
+            background: white; cursor: crosshair; touch-action: none; 
+            max-width: 95vw; height: auto; border: 4px solid #fff; border-radius: 8px; 
+        }
+        #msg { margin: 15px; font-size: 1.2rem; font-weight: bold; color: #ffeb3b; }
+    </style>
+</head>
+<body>
+    <div id="msg">画像解析中...</div>
+    <canvas id="mazeCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("mazeCanvas");
+const ctx = canvas.getContext("2d");
+const msg = document.getElementById("msg");
+const img = new Image();
+
+// 【設定】ここにあなたの画像URLを入れてください
+img.crossOrigin = "Anonymous"; 
+img.src = 'https://i.imgur.com/Q6opy9g.png';
+
+let startX, startY, goalX, goalY;
+let isDragging = false;
+let startTime = null;
+
+img.onload = () => {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+    detectMarkers(); // 自動検知
+};
+
+// 【自動検知】画像内の緑(スタート)と赤(ゴール)を探す
+function detectMarkers() {
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    for (let i = 0; i < data.length; i += 4) {
+        if (data[i+1] > 200 && data[i] < 50 && data[i+2] < 50) { // 緑
+            startX = (i/4) % canvas.width; startY = Math.floor((i/4)/canvas.width);
+        }
+        if (data[i] > 200 && data[i+1] < 50 && data[i+2] < 50) { // 赤
+            goalX = (i/4) % canvas.width; goalY = Math.floor((i/4)/canvas.width);
+        }
+    }
+    msg.textContent = "緑の丸からスタート！";
+    drawBase();
+}
+
+function drawBase() {
+    ctx.drawImage(img, 0, 0);
+    ctx.fillStyle = "green"; ctx.beginPath(); ctx.arc(startX, startY, 20, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "red"; ctx.beginPath(); ctx.arc(goalX, goalY, 20, 0, Math.PI*2); ctx.fill();
+}
+
+function isWall(x, y) {
+    const pixel = ctx.getImageData(x, y, 1, 1).data;
+    return (pixel[0] + pixel[1] + pixel[2] < 400); // 黒っぽい場所を壁とする
+}
+
+canvas.addEventListener("pointerdown", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+    if (Math.hypot(x - startX, y - startY) < 40) {
+        isDragging = true; startTime = Date.now(); msg.textContent = "なぞり中...";
+    }
+});
+
+canvas.addEventListener("pointermove", (e) => {
+    if (!isDragging) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+    if (isWall(x, y)) {
+        msg.textContent = "壁に触れた！やり直し..."; isDragging = false; drawBase();
+    } else {
+        ctx.fillStyle = "blue"; ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI*2); ctx.fill();
+        if (Math.hypot(x - goalX, y - goalY) < 40) {
+            msg.textContent = `🎉 クリア！ タイム: ${((Date.now()-startTime)/1000).toFixed(2)}秒`;
+            isDragging = false;
+        }
+    }
+});
+</script>
+</body>
+</html>
