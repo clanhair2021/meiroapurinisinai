@@ -19,6 +19,11 @@
     <canvas id="mazeCanvas"></canvas>
 
 <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(() => console.log('Service Worker 登録完了！'));
+}
+
 const canvas = document.getElementById("mazeCanvas");
 const ctx = canvas.getContext("2d");
 const msg = document.getElementById("msg");
