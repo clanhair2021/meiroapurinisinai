@@ -159,6 +159,7 @@ function startGame() {
     menuPage.classList.remove('active'); gamePage.classList.add('active');
     scale = 1; panX = 0; panY = 0; updateTransform();
     setTimeout(adjustCanvasSize, 50); setTimeout(resetCanvas, 60);
+    startMazeTimer();
 }
 
 function openAdmin(mode) {
@@ -191,7 +192,7 @@ function openAdmin(mode) {
     }, 200);
 }
 
-function goBackMenu() { gamePage.classList.remove('active'); menuPage.classList.add('active'); }
+function goBackMenu() { stopMazeTimer();gamePage.classList.remove('active'); menuPage.classList.add('active'); }
 function resetCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); strokeHistory = []; currentStroke = []; hasJudged = false; redrawAllHistory(); }
 
 /* ==========================================
@@ -348,7 +349,7 @@ function checkAnswerColor() {
         if (crossWallDetected) break;
     }
     if (crossWallDetected) { alert("残念！途中で壁を跨いでしまっています。\nメニューの「1つ戻る」ボタンでやり直せます！"); hasJudged = false; }
-    else { alert("正解！おめでとうございます！"); resetCanvas(); goBackMenu(); }
+    else { stopMazeTimer();alert("正解！おめでとうございます！"); resetCanvas(); goBackMenu(); }
 }
 
 function checkAnswerTrace() {
@@ -364,6 +365,47 @@ function checkAnswerTrace() {
             }
         }
     }
-    if ((maxReachedIndex / savedRoute.length) >= 0.80) { alert("正解！おめでとうございます！"); resetCanvas(); goBackMenu(); }
+    if ((maxReachedIndex / savedRoute.length) >= 0.80) { stopMazeTimer();alert("正解！おめでとうございます！"); resetCanvas(); goBackMenu(); }
     else { alert("残念！正しいルートを大きく外れてしまっているようです。\nメニューの「1つ戻る」ボタンでやり直せますよ！"); hasJudged = false; }
+}
+// ==========================================
+// ⏱️ 高精度ミリ秒タイマーの設定（妥協なし版）
+// ==========================================
+let mazeStartTime = 0;      // スタートした時刻を記録する変数
+let mazeTimerInterval = null; // タイマーを動かし続けるための目印
+let isMazeTimerRunning = false; // いまタイマーが動いているかどうかのフラグ
+
+// タイマーをスタートする関数
+function startMazeTimer() {
+    if (isMazeTimerRunning) return; // すでに動いていたら何もしない（バグ防止）
+    isMazeTimerRunning = true;
+    mazeStartTime = Date.now(); // スタートした瞬間の現在時刻（ミリ秒）を記録
+    
+    // 10ミリ秒（0.01秒）ごとに、超高速で画面の数字を書き換える
+    mazeTimerInterval = setInterval(() => {
+        const elapsedTime = Date.now() - mazeStartTime; // 経った時間を計算
+        document.getElementById('timer-display').innerText = "TIME: " + formatMazeTime(elapsedTime);
+    }, 10);
+}
+
+// タイマーをストップする関数
+function stopMazeTimer() {
+    if (!isMazeTimerRunning) return;
+    isMazeTimerRunning = false;
+    clearInterval(mazeTimerInterval); // タイマーのループをピタッと止める
+}
+
+// 計算されたミリ秒を 「00:00.00」 の文字の形に変える関数
+function formatMazeTime(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const milliseconds = Math.floor((ms % 1000) / 10); // 上2桁だけ使う
+    
+    // 桁数が足りない時に「0」で埋める処理（例: 5秒 → 05秒）
+    const mm = String(minutes).padStart(2, '0');
+    const ss = String(seconds).padStart(2, '0');
+    const msm = String(milliseconds).padStart(2, '0');
+    
+    return `${mm}:${ss}.${msm}`;
 }
