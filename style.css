@@ -1,98 +1,173 @@
 /* ==========================================
-   🎨 テーマカラー・スタイルの設定
+   🔤 フォントファイルの設定
    ========================================== */
-:root {
-    --theme-color: #c5a880;       /* メインのボタン色（CLan様カラー） */
-    --bg-color: #f9f6f0;          /* 画面全体の背景色 */
-    --text-color: #333333;        /* 文字の色 */
-    --canvas-border: 2px solid #333333; /* 迷路の枠線 */
-    
-    --admin-color: #5a6268;       /* 管理者ボタンの色 */
-    --undo-color: #e0a800;        /* 1つ戻るボタンの色 */
-    --selected-color: #007bff;    /* 選択中モードの色 */
+@font-face {
+    font-family: 'CLanCustomFont';
+    src: url('Nosutaru-dotMPlusH-10-Regular.ttf') format('truetype');
 }
 
 /* ==========================================
-   共通レイアウト
+   🎨 テーマ管理（基本的に色なし・白黒ベース）
    ========================================== */
+:root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --border-style: 2px solid #000000;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'CLanCustomFont', sans-serif;
+    border-radius: 0 !important; /* すべての角丸を強制的に四角にする */
+}
+
 body { 
-    margin: 0; 
-    font-family: sans-serif; 
-    text-align: center; 
     background: var(--bg-color); 
     color: var(--text-color); 
     overflow-x: hidden; 
+    text-align: center;
 }
 
 .page { display: none; padding: 15px; }
 .active { display: block; }
 
 /* ==========================================
-   ボタン・UI要素
+   ボタンのデザイン（四角・白黒）
    ========================================== */
 button { 
-    padding: 12px 24px; 
-    font-size: 16px; 
-    margin: 6px; 
-    border: none; 
-    background: var(--theme-color); 
-    color: white; 
-    border-radius: 25px; 
+    padding: 10px 20px; 
+    font-size: 14px; 
+    margin: 4px; 
+    border: var(--border-style); 
+    background: #ffffff; 
+    color: #000000; 
     cursor: pointer; 
+    font-weight: bold;
+}
+button:hover {
+    background: #000000;
+    color: #ffffff;
 }
 
-button.admin-btn { background: var(--admin-color); }
-button.admin-sub { background: #6c757d; font-size: 14px; padding: 8px 16px; }
-
-.mode-btn { background: #6c757d; font-weight: bold; }
+/* 選択中のモードボタン */
 .mode-btn.selected { 
-    background: var(--selected-color); 
-    box-shadow: 0 0 10px rgba(0,123,255,0.5); 
-}
-.wide-btn { background: #17a2b8; font-weight: bold; }
-.undo-btn { background: var(--undo-color); color: #333; font-weight: bold; }
-
-/* 🛠️ 不要なボタン・パーツを隠したいときは、ここを none にする */
-.optional-btn {
-    display: inline-block; /* 隠すときは none に変更 */
+    background: #000000; 
+    color: #ffffff; 
 }
 
-/* 管理者用の設定エリア */
-#admin-controls {
-    background: #e2e3e5; 
-    padding: 10px; 
-    border-radius: 10px; 
-    margin: 0 auto 5px auto; 
-    font-size: 14px;
-    max-width: 400px;
-}
-.setup-zone { background: #fff; padding: 5px; margin: 5px 0; border-radius: 5px; }
-#setup-status { color: #d9534f; font-weight: bold; }
-
-#floating-menu-btn {
-    position: fixed; top: 10px; right: 10px; z-index: 100;
-    background: rgba(51, 51, 51, 0.6); color: white;
-    padding: 8px 16px; font-size: 14px; border-radius: 15px; display: none;
-}
+/* 警告や保存などの特殊ボタンも枠線ベースに */
+.undo-btn { background: #ffffff; }
+.admin-save { background: #000000; color: #ffffff; width: 100%; margin-top: 10px; }
+.admin-sub { font-size: 12px; padding: 6px 12px; background: #ffffff; }
 
 /* ==========================================
-   キャンバス・迷路ラッパー
+   メニュー画面・ステージ選択のレイアウト
+   ========================================== */
+.menu-header {
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    margin: 20px auto 40px auto;
+    padding: 10px;
+}
+.menu-header h1 {
+    font-size: 24px;
+    letter-spacing: 1px;
+}
+
+/* 右上の隠し設定ボタン */
+.settings-menu {
+    position: absolute;
+    top: 0;
+    right: 10px;
+}
+.settings-trigger {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+.settings-content {
+    display: none;
+    position: absolute;
+    top: 35px;
+    right: 0;
+    background: #ffffff;
+    border: var(--border-style);
+    padding: 12px;
+    width: 180px;
+    z-index: 10;
+    text-align: left;
+}
+.settings-content.open { display: block; }
+.settings-item label {
+    display: block;
+    font-size: 11px;
+    margin-bottom: 3px;
+}
+.settings-btn {
+    width: 100%;
+    padding: 4px;
+    font-size: 12px;
+    margin: 0;
+}
+
+/* 縦に並ぶステージカード */
+.stage-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.stage-card {
+    border: var(--border-style);
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    background: #ffffff;
+}
+.stage-card:hover {
+    background: #f5f5f5;
+}
+.stage-image-box {
+    width: 70px;
+    height: 70px;
+    border: 1px solid #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fafafa;
+    flex-shrink: 0;
+}
+.image-placeholder { font-size: 12px; font-weight: bold; }
+.stage-info { text-align: left; }
+.stage-number { font-size: 11px; color: #666; }
+.stage-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+
+/* ==========================================
+   ゲーム画面・キャンバス
    ========================================== */
 #canvas-container { 
-    position: relative; width: 360px; height: 520px; margin: 10px auto; 
-    border: var(--canvas-border); background: #eee; overflow: hidden; 
-    transition: height 0.3s ease;
+    position: relative; width: 360px; height: 520px; margin: 15px auto; 
+    border: var(--border-style); background: #ffffff; overflow: hidden; 
 }
-#canvas-container.fullscreen { width: 95vw; height: 80vh; margin: 40px auto 10px auto; }
-
-
 #maze-wrapper {
     position: absolute; width: 100%; height: 100%;
     display: flex; align-items: center; justify-content: center;
     transform-origin: center center; transition: transform 0.1s linear; 
 }
-#maze-wrapper.landscape { transform: rotate(90deg); }
-
 #maze-bg { position: absolute; max-width: 100%; max-height: 100%; object-fit: contain; z-index: 1; display: none; pointer-events: none; }
 #canvas { position: absolute; z-index: 2; }
 #hidden-canvas { display: none; }
+
+#admin-controls {
+    border: var(--border-style); background: #fafafa; padding: 10px; margin: 10px auto;
+    max-width: 360px; font-size: 13px; text-align: left;
+}
+.setup-zone { border: 1px dashed #000; padding: 8px; margin: 8px 0; background: #fff; }
+#setup-status { font-weight: bold; color: #000; }
+#guide-text { margin-top: 10px; font-size: 14px; }
