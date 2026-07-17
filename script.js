@@ -159,7 +159,6 @@ function startGame() {
     menuPage.classList.remove('active'); gamePage.classList.add('active');
     scale = 1; panX = 0; panY = 0; updateTransform();
     setTimeout(adjustCanvasSize, 50); setTimeout(resetCanvas, 60);
-    startMazeTimer();
 }
 
 function openAdmin(mode) {
@@ -246,7 +245,11 @@ canvas.addEventListener('touchstart', (e) => {
     }
 
     if (!isAdminMode && hasJudged) return; 
-    isDrawing = true; currentStroke = [pos]; 
+    isDrawing = true; 
+    if (!isAdminMode && !isMazeTimerRunning) {
+        startMazeTimer();
+    }
+    currentStroke = [pos]; 
     ctx.beginPath(); ctx.moveTo(pos.x, pos.y);
     ctx.lineWidth = CONFIG.strokeWidth / scale; 
     ctx.strokeStyle = isAdminMode ? CONFIG.adminStrokeColor : CONFIG.userStrokeColor;
@@ -267,6 +270,9 @@ canvas.addEventListener('touchmove', (e) => {
         } return;
     }
     if (!isDrawing || (!isAdminMode && hasJudged)) return;
+    if (!isMazeTimerRunning) {
+        startMazeTimer();
+    }
     const pos = getTouchPos(e); currentStroke.push(pos); ctx.lineTo(pos.x, pos.y); ctx.stroke();
     if (!isAdminMode) { checkRealtimeGoalTouch(pos.x, pos.y); }
 });
