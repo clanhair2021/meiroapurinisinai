@@ -8,10 +8,12 @@
 </head>
 <body>
 
+    <!-- 1. メニュー画面（ステージ選択） -->
     <div id="menu-page" class="page active">
         <header class="menu-header">
             <h1>美容室CLanからの挑戦状</h1>
             
+            <!-- 右上の隠し設定メニュー -->
             <div class="settings-menu">
                 <button class="settings-trigger" onclick="toggleSettings()">設定</button>
                 <div class="settings-content" id="settingsContent">
@@ -27,6 +29,7 @@
             </div>
         </header>
 
+        <!-- 下にひとつずつ置かれていくステージ一覧 -->
         <main class="stage-container">
             <div class="stage-card" onclick="startGame()">
                 <div class="stage-image-box">
@@ -37,28 +40,42 @@
                     <div class="stage-title">CLanからの最初の迷路</div>
                 </div>
             </div>
-            </main>
+        </main>
     </div>
 
+    <!-- 2. ゲーム・登録共通画面（迷路最大化バージョン） -->
     <div id="game-page" class="page">
-        <div id="ui-header">
-            <h2 id="page-title">迷路画面</h2>
-            <div class="btn-group">
-                <button onclick="goBackMenu()">メニューに戻る</button>
-                <button class="undo-btn" onclick="undoLastLine()">1つ戻る</button>
-                <button onclick="resetCanvas()">全部引き直す</button>
+        
+        <!-- 左上の目立たないメニュー開閉ボタン -->
+        <button id="menu-toggle" onclick="toggleDrawer()">MENU</button>
+
+        <!-- スライド式操作パネル（普段は隠れています） -->
+        <div id="drawer-menu">
+            <div class="drawer-header">
+                <h3 id="page-title">迷路メニュー</h3>
+                <button class="close-drawer" onclick="toggleDrawer()">×</button>
             </div>
             
-            <div class="btn-group" style="margin-top: 5px;">
-                <button id="btn-draw" class="mode-btn selected" onclick="setMode('draw')">お絵描き</button>
-                <button id="btn-zoom" class="mode-btn" onclick="setMode('zoom')">拡大移動</button>
+            <div class="drawer-section">
+                <button class="drawer-btn" onclick="goBackMenu(); toggleDrawer();">メニューに戻る</button>
+                <button class="drawer-btn undo-btn" onclick="undoLastLine(); toggleDrawer();">1つ戻る</button>
+                <button class="drawer-btn" onclick="resetCanvas(); toggleDrawer();">全部引き直す</button>
+            </div>
+            
+            <div class="drawer-section">
+                <p class="section-label">操作モード</p>
+                <div class="mode-toggle-group">
+                    <button id="btn-draw" class="mode-btn selected" onclick="setMode('draw'); toggleDrawer();">お絵描き</button>
+                    <button id="btn-zoom" class="mode-btn" onclick="setMode('zoom'); toggleDrawer();">拡大移動</button>
+                </div>
             </div>
         </div>
 
+        <!-- 管理者用コントロールパネル（設定から開いたときだけ画面下部に控えめに表示） -->
         <div id="admin-controls" style="display: none;">
             <div id="ctrl-image-mode">
-                <p>1. 問題の画像：<input type="file" id="img-question" accept="image/*"></p>
-                <p>2. 答えの画像：<input type="file" id="img-answer" accept="image/*"></p>
+                <p>1. 問題画像：<input type="file" id="img-question" accept="image/*"></p>
+                <p>2. 答え画像：<input type="file" id="img-answer" accept="image/*"></p>
                 <div class="setup-zone">
                     <span id="setup-status">位置を指定してください</span><br>
                     <button class="admin-sub" onclick="setSetupStep('start')">スタート位置を指定</button>
@@ -73,14 +90,13 @@
             </div>
         </div>
 
+        <!-- 迷路表示エリア（スマートフォンの画面いっぱいに広がるよう調整） -->
         <div id="canvas-container">
             <div id="maze-wrapper">
                 <img id="maze-bg" alt="迷路の背景">
                 <canvas id="canvas" width="360" height="520"></canvas>
             </div>
         </div>
-        
-        <p id="guide-text">スタートからゴールまでなぞってください。</p>
     </div>
 
     <canvas id="hidden-canvas"></canvas>
