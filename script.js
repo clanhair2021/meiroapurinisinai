@@ -171,19 +171,19 @@ function setSetupStep(step) {
 }
 
 function startGame(stageNumber) {
-    // 引数がない場合は、現在のステージ番号のままにする（予備用の処理）
     if (stageNumber) {
         loadStageData(stageNumber);
     }
     
     isAdminMode = false; setupStep = 'none';
-    pageTitle.innerText = `CLan迷路ゲーム - Stage ${currentStageNumber}`; // ステージ名を表示に反映
+    pageTitle.innerText = `CLan迷路ゲーム - Stage ${currentStageNumber}`; 
     setMode('draw'); adminControls.style.display = 'none';
     menuPage.classList.remove('active'); gamePage.classList.add('active');
     scale = 1; panX = 0; panY = 0; updateTransform();
     setTimeout(adjustCanvasSize, 50); setTimeout(resetCanvas, 60);
 }
 
+/* 💡 タイトル入力に対応させた最新版の openAdmin */
 function openAdmin(mode) {
     document.getElementById('settingsContent').classList.remove('open');
     isAdminMode = true; adminSubMode = mode; setupStep = 'none';
@@ -195,6 +195,13 @@ function openAdmin(mode) {
     document.getElementById('admin-controls').style.display = 'block';
     ctrlImageMode.style.display = mode === 'imageMode' ? 'block' : 'none';
     ctrlTraceMode.style.display = mode === 'traceMode' ? 'block' : 'none';
+    
+    // 現在のステージに保存されているタイトルがあれば、入力欄に自動でセットする
+    const savedTitle = localStorage.getItem(`stage_${currentStageNumber}_title`) || "";
+    const inputA = document.getElementById('stage-title-input-a');
+    const inputB = document.getElementById('stage-title-input-b');
+    if (inputA) inputA.value = savedTitle;
+    if (inputB) inputB.value = savedTitle;
     
     menuPage.classList.remove('active'); 
     gamePage.classList.add('active');
@@ -209,7 +216,7 @@ function openAdmin(mode) {
     }, 200);
 }
 
-function goBackMenu() { stopMazeTimer();document.getElementById('timer-display').innerText = "TIME: 00:00.00";gamePage.classList.remove('active'); menuPage.classList.add('active'); }
+function goBackMenu() { stopMazeTimer(); document.getElementById('timer-display').innerText = "TIME: 00:00.00"; gamePage.classList.remove('active'); menuPage.classList.add('active'); }
 function resetCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); strokeHistory = []; currentStroke = []; hasJudged = false; redrawAllHistory(); }
 
 /* ==========================================
@@ -307,7 +314,6 @@ document.getElementById('img-answer').addEventListener('change', (e) => {
     const reader = new FileReader();
     reader.onload = function(event) { 
         imgAnswerObj.src = event.target.result; 
-        // 💡 ステージごとのキー名で保存
         localStorage.setItem(`stage_${currentStageNumber}_answer_image`, event.target.result); 
     };
     reader.readAsDataURL(file);
@@ -318,16 +324,20 @@ function loadImgToBg(file) {
     reader.onload = function(event) { 
         mazeBg.src = event.target.result; 
         mazeBg.style.display = 'block'; 
-        // 💡 ステージごとのキー名で保存
         localStorage.setItem(`stage_${currentStageNumber}_image`, event.target.result); 
     };
     reader.readAsDataURL(file);
 }
+
+/* 💡 タイトル入力に対応させた最新版の saveImageModeData */
 function saveImageModeData() {
     if(!mazeBg.src || !imgAnswerObj.src) { alert("問題と答えの両方の画像をセットしてください。"); return; }
     if(!mazeStartPoint || !mazeGoalPoint) { alert("スタート位置とゴール位置を画面上で指定してください。"); return; }
     
-    // 💡 すべて currentStageNumber を組み込んだキー名に変更
+    const titleInput = document.getElementById('stage-title-input-a').value.trim();
+    const finalTitle = titleInput || `ステージ ${currentStageNumber}`;
+
+    localStorage.setItem(`stage_${currentStageNumber}_title`, finalTitle);
     localStorage.setItem(`stage_${currentStageNumber}_judge_system`, 'color'); 
     judgeSystemType = 'color';
     localStorage.setItem(`stage_${currentStageNumber}_start_pt`, JSON.stringify(mazeStartPoint)); 
@@ -339,11 +349,15 @@ function saveImageModeData() {
 
 function getAllPoints() { return strokeHistory.flat(); }
 
+/* 💡 タイトル入力に対応させた最新版の saveTraceModeData */
 function saveTraceModeData() {
     const allPts = getAllPoints(); if (allPts.length < 5) { alert("ルートがなぞられていません。"); return; }
     savedRoute = allPts.filter((_, idx) => idx % 3 === 0); savedRoute.push(allPts[allPts.length - 1]);
     
-    // 💡 すべて currentStageNumber を組み込んだキー名に変更
+    const titleInput = document.getElementById('stage-title-input-b').value.trim();
+    const finalTitle = titleInput || `ステージ ${currentStageNumber}`;
+
+    localStorage.setItem(`stage_${currentStageNumber}_title`, finalTitle);
     localStorage.setItem(`stage_${currentStageNumber}_route`, JSON.stringify(savedRoute)); 
     localStorage.setItem(`stage_${currentStageNumber}_judge_system`, 'trace'); 
     judgeSystemType = 'trace';
@@ -374,7 +388,6 @@ function checkAnswerColor() {
     
     const allPts = getAllPoints();
     
-    // 1. スタート位置のチェック
     if (mazeStartPoint && allPts.length > 0) {
         if (Math.hypot(allPts[0].x - mazeStartPoint.x, allPts[0].y - mazeStartPoint.y) > CONFIG.startTolerance) {
             alert("残念！スタート地点から正しく描き始められていないようです。"); 
@@ -383,7 +396,6 @@ function checkAnswerColor() {
         }
     }
     
-    // 2. 赤色ルートのなぞり率チェック
     let totalCheckPoints = 0;
     let onRedRouteCount = 0;
 
@@ -391,26 +403,22 @@ function checkAnswerColor() {
         if (stroke.length === 0) continue;
         for (let i = 0; i < stroke.length; i++) {
             let pt = stroke[i];
-            totalCheckPoints++; // プレイヤーが引いた点の総数
+            totalCheckPoints++; 
             
-            // その座標の「答え画像」のピクセル色を取得
             const pixel = hiddenCtx.getImageData(Math.floor(pt.x), Math.floor(pt.y), 1, 1).data;
-            const r = pixel[0]; // 赤み
-            const g = pixel[1]; // 緑み
-            const b = pixel[2]; // 青み
-            const a = pixel[3]; // 透明度
+            const r = pixel[0]; 
+            const g = pixel[1]; 
+            const b = pixel[2]; 
+            const a = pixel[3]; 
 
-            // ✨ 判定基準：赤みが強くて（Rが150以上）、緑と青が低い（GとBが100未満）かつ透明じゃない
             if (r > 150 && g < 100 && b < 100 && a > 200) {
-                onRedRouteCount++; // 正解ルートに乗っている点をカウント
+                onRedRouteCount++; 
             }
         }
     }
 
-    // プレイヤーが引いた線のうち、何％が赤ルートの上だったか計算
     const traceAccuracy = totalCheckPoints > 0 ? (onRedRouteCount / totalCheckPoints) : 0;
 
-    // お手本モードと同じく「80%以上」赤ルートをなぞれていれば合格！
     if (traceAccuracy >= 0.80) { 
         stopMazeTimer();
         alert("正解！おめでとうございます！"); 
@@ -438,75 +446,66 @@ function checkAnswerTrace() {
     if ((maxReachedIndex / savedRoute.length) >= 0.80) { stopMazeTimer();alert("正解！おめでとうございます！"); resetCanvas(); goBackMenu(); }
     else { alert("残念！正しいルートを大きく外れてしまっているようです。\nメニューの「1つ戻る」ボタンでやり直せますよ！"); hasJudged = false; }
 }
-// ==========================================
-// ⏱️ 高精度ミリ秒タイマーの設定（妥協なし版）
-// ==========================================
-let mazeStartTime = 0;      // スタートした時刻を記録する変数
-let mazeTimerInterval = null; // タイマーを動かし続けるための目印
-let isMazeTimerRunning = false; // いまタイマーが動いているかどうかのフラグ
 
-// タイマーをスタートする関数
+/* ==========================================
+   ⏱️ 高精度ミリ秒タイマーの設定
+   ========================================== */
+let mazeStartTime = 0;      
+let mazeTimerInterval = null; 
+let isMazeTimerRunning = false; 
+
 function startMazeTimer() {
-    if (isMazeTimerRunning) return; // すでに動いていたら何もしない（バグ防止）
+    if (isMazeTimerRunning) return; 
     isMazeTimerRunning = true;
-    mazeStartTime = Date.now(); // スタートした瞬間の現在時刻（ミリ秒）を記録
+    mazeStartTime = Date.now(); 
     
-    // 10ミリ秒（0.01秒）ごとに、超高速で画面の数字を書き換える
     mazeTimerInterval = setInterval(() => {
-        const elapsedTime = Date.now() - mazeStartTime; // 経った時間を計算
+        const elapsedTime = Date.now() - mazeStartTime; 
         document.getElementById('timer-display').innerText = "TIME: " + formatMazeTime(elapsedTime);
     }, 10);
 }
 
-// タイマーをストップする関数
 function stopMazeTimer() {
     if (!isMazeTimerRunning) return;
     isMazeTimerRunning = false;
-    clearInterval(mazeTimerInterval); // タイマーのループをピタッと止める
+    clearInterval(mazeTimerInterval); 
 }
 
-// 計算されたミリ秒を 「00:00.00」 の文字の形に変える関数
 function formatMazeTime(ms) {
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    const milliseconds = Math.floor((ms % 1000) / 10); // 上2桁だけ使う
+    const milliseconds = Math.floor((ms % 1000) / 10); 
     
-    // 桁数が足りない時に「0」で埋める処理（例: 5秒 → 05秒）
     const mm = String(minutes).padStart(2, '0');
     const ss = String(seconds).padStart(2, '0');
     const msm = String(milliseconds).padStart(2, '0');
     
     return `${mm}:${ss}.${msm}`;
 }
-/* ✨ ファイルの1番最後などに追記してください */
+
 function adminSelectStage(stageNumber) {
     loadStageData(stageNumber);
-    // 管理者画面のタイトル表示を更新
     pageTitle.innerText = adminSubMode === 'imageMode' ? `画像2枚登録 (Stage ${stageNumber})` : `なぞりお手本登録 (Stage ${stageNumber})`;
     resetCanvas();
     alert(`編集対象を ステージ ${stageNumber} に切り替えました。画像をアップロードして登録してください。`);
 }
+
 /* ==========================================
    ✨ ステージリストの自動組み立てと新規追加
    ========================================== */
-
-// ページ読み込み時に、保存されているステージをメニューに一覧表示する
 const oldOnload = window.onload;
 window.onload = function() {
     if (typeof oldOnload === 'function') oldOnload();
-    refreshStageMenu(); // メニュー画面の表示を最新にする
+    refreshStageMenu();
 };
 
-// メニュー画面のステージ一覧を自動生成する関数
 function refreshStageMenu() {
     const stageContainer = document.querySelector('.stage-container');
     if (!stageContainer) return;
 
-    // いったんメニューの中身をきれいにする
     stageContainer.innerHTML = "";
 
-    // ローカルストレージを探索して、登録されている最大のステージ番号を見つける
     let maxStage = 1;
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -517,19 +516,23 @@ function refreshStageMenu() {
         }
     }
 
-    // 登録されているステージ（1から最大番号まで）をループで画面に並べる
     for (let i = 1; i <= maxStage; i++) {
-        // 各ステージに画像が登録されているかチェック
         const hasImg = localStorage.getItem(`stage_${i}_image`);
-        const placeholderText = hasImg ? `STAGE ${i}` : `未登録`;
-        const titleText = hasImg ? `CLanの迷路 - ステージ ${i}` : `（未登録のステージです）`;
+        
+        const customTitle = localStorage.getItem(`stage_${i}_title`);
+        const titleText = hasImg ? (customTitle || `ステージ ${i}`) : `（未登録のステージです）`;
+
+        let imageBoxHtml = `<div class="image-placeholder">STAGE ${i}</div>`;
+        if (hasImg) {
+            imageBoxHtml = `<div class="image-placeholder" style="background-image: url('${hasImg}'); background-size: cover; background-position: center; color: transparent;">STAGE ${i}</div>`;
+        }
 
         const card = document.createElement('div');
         card.className = 'stage-card';
         card.setAttribute('onclick', `startGame(${i})`);
         card.innerHTML = `
             <div class="stage-image-box">
-                <div class="image-placeholder">${placeholderText}</div>
+                ${imageBoxHtml}
             </div>
             <div class="stage-info">
                 <div class="stage-number">Stage ${String(i).padStart(2, '0')}</div>
@@ -539,7 +542,6 @@ function refreshStageMenu() {
         stageContainer.appendChild(card);
     }
 
-    // ➕ 1番最後に「新しいステージを追加する」ためのカードを置く
     const addCard = document.createElement('div');
     addCard.className = 'stage-card';
     addCard.style.borderStyle = 'dashed';
@@ -557,15 +559,13 @@ function refreshStageMenu() {
     stageContainer.appendChild(addCard);
 }
 
-// 「＋ 新しいステージを追加する」を押したときの処理
 function addNewStageAction(nextStageNumber) {
     loadStageData(nextStageNumber);
     openAdmin('imageMode'); 
 }
 
-// メニューに戻った瞬間にリストが更新されるように拡張
 const originalGoBackMenu = goBackMenu;
 goBackMenu = function() {
     if (typeof originalGoBackMenu === 'function') originalGoBackMenu();
-    refreshStageMenu(); // メニューに戻ったらリストを最新に更新！
+    refreshStageMenu();
 };
