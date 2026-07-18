@@ -488,23 +488,23 @@ function adminSelectStage(stageNumber) {
     alert(`編集対象を ステージ ${stageNumber} に切り替えました。画像をアップロードして登録してください。`);
 }
 /* ==========================================
-   ✨ 【追加】ステージリストの自動組み立てと新規追加
+   ✨ ステージリストの自動組み立てと新規追加
    ========================================== */
 
 // ページ読み込み時に、保存されているステージをメニューに一覧表示する
-const作られた初期onload = window.onload;
+const oldOnload = window.onload;
 window.onload = function() {
-    if (typeof作られた初期onload === 'function') 作られた初期onload();
+    if (typeof oldOnload === 'function') oldOnload();
     refreshStageMenu(); // メニュー画面の表示を最新にする
 };
 
 // メニュー画面のステージ一覧を自動生成する関数
 function refreshStageMenu() {
-    const container = document.querySelector('.stage-container');
-    if (!container) return;
+    const stageContainer = document.querySelector('.stage-container');
+    if (!stageContainer) return;
 
     // いったんメニューの中身をきれいにする
-    container.innerHTML = "";
+    stageContainer.innerHTML = "";
 
     // ローカルストレージを探索して、登録されている最大のステージ番号を見つける
     let maxStage = 1;
@@ -536,7 +536,7 @@ function refreshStageMenu() {
                 <div class="stage-title">${titleText}</div>
             </div>
         `;
-        container.appendChild(card);
+        stageContainer.appendChild(card);
     }
 
     // ➕ 1番最後に「新しいステージを追加する」ためのカードを置く
@@ -544,7 +544,6 @@ function refreshStageMenu() {
     addCard.className = 'stage-card';
     addCard.style.borderStyle = 'dashed';
     addCard.style.background = '#fafafa';
-    // クリックされたら、現在の最大ステージ数 + 1 の番号で管理者画面を開く
     addCard.setAttribute('onclick', `addNewStageAction(${maxStage + 1})`);
     addCard.innerHTML = `
         <div class="stage-image-box" style="border-style: dashed;">
@@ -555,22 +554,18 @@ function refreshStageMenu() {
             <div class="stage-title" style="color: #666;">新しいステージを追加する</div>
         </div>
     `;
-    container.appendChild(addCard);
+    stageContainer.appendChild(addCard);
 }
 
 // 「＋ 新しいステージを追加する」を押したときの処理
 function addNewStageAction(nextStageNumber) {
-    // 新しいステージ番号のデータを読み込ませる（当然最初は空っぽになります）
     loadStageData(nextStageNumber);
-    
-    // そのまま「画像2枚登録」の管理者モードでゲーム画面を開く
-    // ※もし「なぞりお手本」をメインで使う場合は、ここを 'traceMode' に変えてください
     openAdmin('imageMode'); 
 }
 
-// 既存の goBackMenu（メニューに戻る処理）も、戻った瞬間にリストが更新されるように上書き拡張
-const 元のgoBackMenu = goBackMenu;
+// メニューに戻った瞬間にリストが更新されるように拡張
+const originalGoBackMenu = goBackMenu;
 goBackMenu = function() {
-    if (typeof 元のgoBackMenu === 'function') 元のgoBackMenu();
+    if (typeof originalGoBackMenu === 'function') originalGoBackMenu();
     refreshStageMenu(); // メニューに戻ったらリストを最新に更新！
 };
