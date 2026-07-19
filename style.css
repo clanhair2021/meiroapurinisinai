@@ -144,8 +144,12 @@ button:hover {
     background: #fafafa;
     flex-shrink: 0;      /* 🔴 画面が狭くなっても画像が絶対に小さく潰れないようにする命令 */
 }
-.image-placeholder { font-size: 12px; font-weight: bold; }
-
+.image-placeholder { 
+    font-size: 12px; 
+    font-weight: bold; 
+    width: 100%;       /* 👈 追加：外側の枠の横幅いっぱいに広げる */
+    height: 100%;      /* 👈 追加：外側の枠の縦幅いっぱいに広げる */
+}
 /* 📝 右側のテキスト（番号とタイトル）をセットにする部分 */
 .stage-info { 
     text-align: left; 
