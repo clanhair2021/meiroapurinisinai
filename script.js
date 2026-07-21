@@ -47,14 +47,14 @@ let currentStageNumber = 1;
 const PRESET_STAGES = [
     {
         number: 1,
-        title: "はじめての迷路",
+        title: "北海道",
         image: "stages/stage1.jpg",            // 問題画像
         answerImage: "stages/stage1_ans.jpg",  // 正解画像（赤・青・黄が入った画像）
         judgeSystem: "color"
     },
     {
         number: 2,
-        title: "森のまがりくねり道",
+        title: "青森県",
         image: "stages/stage2.jpg",
         answerImage: "stages/stage2_ans.jpg",
         judgeSystem: "color"
