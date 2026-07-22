@@ -510,34 +510,35 @@ function checkAnswerColor() {
         return;
     }
 
-    // ③ プレイヤーの線がそれぞれのチェックポイントの近く（半径20px以内）を通ったか確認
+        // ③ プレイヤーの線がチェックポイントの近くを通ったか確認
     let passedCount = 0;
-    const tolerance = 20; // 判定の甘さ（半径20ピクセル以内なら通過とみなす）
+    const tolerance = 35; // 判定幅を少し広げて優しく（20 -> 35）
 
-    for (let wp of waypoints) {
-        for (let pt of allPts) {
-            if (Math.hypot(pt.x - wp.x, pt.y - wp.y) < tolerance) {
-                wp.passed = true;
-                passedCount++;
-                break; // このCPは通過済みとして次のCPへ
+    for (let i = 0; i < waypoints.length; i++) {
+        const wp = waypoints[i];
+        for (let j = 0; j < allPts.length; j++) {
+            const pt = allPts[j];
+            if (pt && typeof pt.x === 'number' && typeof pt.y === 'number') {
+                if (Math.hypot(pt.x - wp.x, pt.y - wp.y) < tolerance) {
+                    passedCount++;
+                    break; // このチェックポイントはクリア
+                }
             }
         }
     }
 
-    // 通過率を計算（通過したCP数 / 全CP数）
-    const passRate = passedCount / waypoints.length;
+    // 通過率の計算と判定
+    const passRate = waypoints.length > 0 ? (passedCount / waypoints.length) : 0;
 
-    // ④ 正解ルート上のチェックポイントを 【70%以上】 通過していれば合格！
-    if (passRate >= 0.70) { 
+    if (passRate >= 0.60) { // 合格ラインを少し優しく 70% -> 60% に調整
         stopMazeTimer();
         alert("正解！おめでとうございます！"); 
         resetCanvas(); 
         goBackMenu(); 
     } else { 
-        alert("残念！正解ルートを通っていない（途中でショートカットした）ようです。\n「1つ戻る」でやり直せますよ！"); 
+        alert(`残念！正解ルートを通っていません。（通過率: ${Math.round(passRate * 100)}%）\n「1つ戻る」でやり直せますよ！`); 
         hasJudged = false; 
     }
-}
 
 
 /* ==========================================
