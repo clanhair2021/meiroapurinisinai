@@ -1,8 +1,3 @@
-window.onerror = function(message, source, lineno, colno, error) {
-    alert("エラーが発生しました！\n" + message + "\n(" + lineno + "行目)");
-    return true;
-};
-
 /* ==========================================
    ⚙️ システム設定
    ========================================== */
@@ -469,6 +464,7 @@ function checkRealtimeGoalTouch(x, y) {
 }
 
 function checkAnswerColor() {
+    alert("判定関数が呼び出されました！");
     hiddenCanvas.width = canvas.width; 
     hiddenCanvas.height = canvas.height;
     hiddenCtx.drawImage(imgAnswerObj, 0, 0, canvas.width, canvas.height);
@@ -507,7 +503,6 @@ function checkAnswerColor() {
             }
         }
     }
-    alert("黄色の数: " + waypoints.length);
     // 正解ルート画像に黄色が塗られていない場合の安全装置
     if (waypoints.length === 0) {
         alert("正解ルート（黄色）が画像から検出できませんでした。正解画像を確認してください。");
