@@ -555,7 +555,7 @@ function checkAnswerColor() {
     // ④ 通過率の計算と判定
     const passRate = waypoints.length > 0 ? (passedCount / waypoints.length) : 0;
 
-    if (passRate >= 0.60) {
+    if (passRate >= 0.80) {
         stopMazeTimer();
         alert("正解！おめでとうございます！"); 
         resetCanvas(); 
