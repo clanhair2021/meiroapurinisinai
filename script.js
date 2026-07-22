@@ -539,7 +539,7 @@ function checkAnswerColor() {
         alert(`残念！正解ルートを通っていません。（通過率: ${Math.round(passRate * 100)}%）\n「1つ戻る」でやり直せますよ！`); 
         hasJudged = false; 
     }
-
+}
 
 /* ==========================================
    ⏱️ 高精度ミリ秒タイマーの設定
