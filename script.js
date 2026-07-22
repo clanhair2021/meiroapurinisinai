@@ -5,7 +5,7 @@ const CONFIG = {
     userStrokeColor: "rgba(0, 0, 0, 0.6)",   /* プレイヤーが引く線（黒の半透明） */
     adminStrokeColor: "rgba(0, 0, 0, 0.4)",  /* 管理者がお手本をなぞる時の色 */
     strokeWidth: 5,                          /* 線の太さ */
-    goalTolerance: 30,                       /* ゴール位置判定の甘さ */
+    goalTolerance: 12,                       /* ゴール位置判定の甘さ */
     startTolerance: 120                      /* スタート位置判定の甘さ */
 };
 
