@@ -319,7 +319,11 @@ function redrawAllHistory() {
     }
 }
 
-function undoLastLine() { if (strokeHistory.length > 0) { strokeHistory.pop(); redrawAllHistory(); } }
+function undoLastLine() { 
+    if (strokeHistory.length > 0) { 
+        strokeHistory.pop()
+        hasJudged = false;
+        redrawAllHistory(); } }
 
 function getTouchPos(e) {
     const rect = canvas.getBoundingClientRect(); const touch = e.touches[0];
@@ -646,4 +650,8 @@ function refreshStageMenu() {
 function addNewStageAction(nextStageNumber) {
     loadStageData(nextStageNumber);
     openAdmin('imageMode'); 
+}
+
+function checkAnswerTrace() {
+    stopMazeTimer(); alert("正解！おめでとうございます！"); resetCanvas(); goBackMenu();
 }
