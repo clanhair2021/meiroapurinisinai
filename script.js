@@ -537,7 +537,7 @@ function checkAnswerColor() {
 
     // ③ 通過チェック
     let passedCount = 0;
-    const tolerance = 35;
+    const tolerance = 18;
 
     for (let i = 0; i < waypoints.length; i++) {
         const wp = waypoints[i];
